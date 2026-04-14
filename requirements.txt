@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+yfinance
+anthropic
+python-dotenv
+httpx
