@@ -1,5 +1,7 @@
-from backend.data_search import get_stock_data
-import json
+import sys
+sys.path.insert(0, "backend")
 
-data = get_stock_data("AAPL")
-print(json.dumps(data, indent=2, ensure_ascii=False))
+from agent import analyze_stock
+
+result = analyze_stock("AAPL")
+print(result)

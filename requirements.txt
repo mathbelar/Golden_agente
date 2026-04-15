@@ -1,6 +1,6 @@
 fastapi
 uvicorn
 yfinance
-anthropic
+google-genai
 python-dotenv
 httpx
