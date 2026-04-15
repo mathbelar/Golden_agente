@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Investment Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 40px;
+      font-size: 0.95rem;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    input {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid #2a2a3a;
+      background: #1a1a2e;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input:focus { border-color: #4f8ef7; }
+
+    button {
+      padding: 14px 24px;
+      border-radius: 10px;
+      border: none;
+      background: #4f8ef7;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #3a7de0; }
+    button:disabled { background: #2a2a3a; cursor: not-allowed; }
+
+    .loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      color: #888;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #2a2a3a;
+      border-top-color: #4f8ef7;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .report {
+      display: none;
+      width: 100%;
+      max-width: 760px;
+      background: #1a1a2e;
+      border: 1px solid #2a2a3a;
+      border-radius: 16px;
+      padding: 36px;
+      line-height: 1.8;
+    }
+
+    .report h2 { color: #4f8ef7; margin-bottom: 4px; font-size: 1.4rem; }
+    .report h2 span { color: #888; font-size: 0.9rem; font-weight: 400; margin-left: 8px; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #2a2a3a;
+      margin: 20px 0;
+    }
+
+    .report-content { white-space: pre-wrap; font-size: 0.95rem; }
+
+    .error {
+      display: none;
+      color: #ff6b6b;
+      background: #2a1a1a;
+      border: 1px solid #ff6b6b44;
+      border-radius: 10px;
+      padding: 16px 24px;
+      max-width: 500px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Agente de investimentos</h1>
+  <p class="subtitle">Análise fundamentalista com IA para qualquer ação</p>
+
+  <div class="search-box">
+    <input id="ticker" type="text" placeholder="Digite o ticker (ex: AAPL, VALE3)" />
+    <button id="btn" onclick="analyze()">Analisar</button>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span>Analisando ativo...</span>
+  </div>
+
+  <div class="error" id="error"></div>
+
+  <div class="report" id="report">
+    <h2 id="report-title">Relatório <span id="report-ticker"></span></h2>
+    <hr class="divider" />
+    <div class="report-content" id="report-content"></div>
+  </div>
+
+  <script>
+    document.getElementById("ticker").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") analyze();
+    });
+
+    async function analyze() {
+      const ticker = document.getElementById("ticker").value.trim().toUpperCase();
+      if (!ticker) return;
+
+      const btn = document.getElementById("btn");
+      const loading = document.getElementById("loading");
+      const report = document.getElementById("report");
+      const error = document.getElementById("error");
+
+      // reset
+      report.style.display = "none";
+      error.style.display = "none";
+      loading.style.display = "flex";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("http://localhost:8000/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ticker }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.detail || "Erro ao analisar");
+
+        document.getElementById("report-ticker").textContent = ticker;
+        document.getElementById("report-content").textContent = data.report;
+        report.style.display = "block";
+
+      } catch (err) {
+        error.textContent = "Erro: " + err.message;
+        error.style.display = "block";
+      } finally {
+        loading.style.display = "none";
+        btn.disabled = false;
+      }
+    }
+  </script>
+
+</body>
+</html>
