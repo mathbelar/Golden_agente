@@ -25,3 +25,9 @@ class TickerRequest(BaseModel):
 async def analyze(request: TickerRequest):
     report = analyze_stock(request.ticker)
     return {"report": report}
+
+@app.get("/destaques")
+async def destaques():
+    from agent import get_destaques
+    result = get_destaques()
+    return {"destaques": result}
